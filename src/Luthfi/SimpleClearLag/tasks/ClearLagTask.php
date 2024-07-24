@@ -5,7 +5,10 @@ namespace Luthfi\SimpleClearLag\tasks;
 use pocketmine\scheduler\Task;
 use pocketmine\Server;
 use Luthfi\SimpleClearLag\Main;
+use pocketmine\player\Player;
 use pocketmine\world\World;
+use pocketmine\entity\Entity;
+use pocketmine\entity\object\ItemEntity;
 
 class ClearLagTask extends Task {
 
@@ -33,7 +36,7 @@ class ClearLagTask extends Task {
             foreach (Server::getInstance()->getWorldManager()->getWorlds() as $world) {
                 $this->clearEntities($world);
             }
-            $message = $plugin->getClearMessage();
+            $message = $this->plugin->getClearMessage();
             foreach (Server::getInstance()->getOnlinePlayers() as $player) {
                 $player->sendActionBarMessage($message);
             }
@@ -46,8 +49,10 @@ class ClearLagTask extends Task {
                 $entity->flagForDespawn();
             }
         }
-        foreach ($world->getDroppedItems() as $item) {
-            $item->flagForDespawn();
+        foreach ($world->getEntities() as $entity) {
+            if ($entity instanceof ItemEntity) {
+                $entity->flagForDespawn();
+            }
         }
     }
 }
