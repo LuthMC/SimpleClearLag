@@ -15,24 +15,26 @@ class ClearLagTask extends Task {
     /** @var Main */
     private $plugin;
     private $interval;
+    private $elapsedTime = 0;
 
-    public function __construct(Main $plugin) {
+    public function __construct(Main $plugin, int $interval) {
         $this->plugin = $plugin;
-        $this->interval = $this->plugin->getConfig()->get("interval", 5) * 60;
+        $this->interval = $interval;
     }
 
     public function onRun(): void {
-        $warnings = [300, 60, 30, 5, 4, 3, 2, 1];
-        $currentTime = time() % $this->interval;
+        $this->elapsedTime += 1;
 
-        if (in_array($currentTime, $warnings)) {
-            $message = $this->plugin->getWarningMessage($this->interval - $currentTime);
+        $warnings = [300, 60, 30, 5, 4, 3, 2, 1];
+
+        if (in_array($this->interval - $this->elapsedTime, $warnings)) {
+            $message = $this->plugin->getWarningMessage($this->interval - $this->elapsedTime);
             foreach (Server::getInstance()->getOnlinePlayers() as $player) {
                 $player->sendActionBarMessage($message);
             }
         }
 
-        if ($currentTime === 0) {
+        if ($this->elapsedTime >= $this->interval) {
             foreach (Server::getInstance()->getWorldManager()->getWorlds() as $world) {
                 $this->clearEntities($world);
             }
@@ -40,6 +42,7 @@ class ClearLagTask extends Task {
             foreach (Server::getInstance()->getOnlinePlayers() as $player) {
                 $player->sendActionBarMessage($message);
             }
+            $this->elapsedTime = 0;
         }
     }
 
