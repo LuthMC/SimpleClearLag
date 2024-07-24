@@ -15,26 +15,27 @@ class ClearLagTask extends Task {
     /** @var Main */
     private $plugin;
     private $interval;
-    private $elapsedTime = 0;
+    private $nextClearTime;
 
-    public function __construct(Main $plugin, int $interval) {
+    public function __construct(Main $plugin) {
         $this->plugin = $plugin;
-        $this->interval = $interval;
+        $this->interval = $this->plugin->getConfig()->get("interval", 5) * 60;
+        $this->nextClearTime = time() + $this->interval;
     }
 
     public function onRun(): void {
-        $this->elapsedTime += 1;
+        $currentTime = time();
+        $timeLeft = $this->nextClearTime - $currentTime;
 
         $warnings = [300, 60, 30, 5, 4, 3, 2, 1];
-
-        if (in_array($this->interval - $this->elapsedTime, $warnings)) {
-            $message = $this->plugin->getWarningMessage($this->interval - $this->elapsedTime);
+        if (in_array($timeLeft, $warnings)) {
+            $message = $this->plugin->getWarningMessage($timeLeft);
             foreach (Server::getInstance()->getOnlinePlayers() as $player) {
                 $player->sendActionBarMessage($message);
             }
         }
 
-        if ($this->elapsedTime >= $this->interval) {
+        if ($timeLeft <= 0) {
             foreach (Server::getInstance()->getWorldManager()->getWorlds() as $world) {
                 $this->clearEntities($world);
             }
@@ -42,20 +43,31 @@ class ClearLagTask extends Task {
             foreach (Server::getInstance()->getOnlinePlayers() as $player) {
                 $player->sendActionBarMessage($message);
             }
-            $this->elapsedTime = 0;
+            $this->nextClearTime = $currentTime + $this->interval;
         }
     }
 
     private function clearEntities(World $world): void {
         foreach ($world->getEntities() as $entity) {
-            if (!$entity instanceof Player) {
-                $entity->flagForDespawn();
+            if ($this->isProtectedEntity($entity)) {
+                continue;
+            }
+            $entity->flagForDespawn();
+        }
+    }
+
+    private function isProtectedEntity(Entity $entity): bool {
+        if ($entity instanceof Player) {
+            return true;
+        }
+        
+        $protectedEntityTags = ["HumanNPC", "Slapper"];
+        foreach ($protectedEntityTags as $tag) {
+            if ($entity->namedtag->hasTag($tag)) {
+                return true;
             }
         }
-        foreach ($world->getEntities() as $entity) {
-            if ($entity instanceof ItemEntity) {
-                $entity->flagForDespawn();
-            }
-        }
+
+        return $entity instanceof ItemEntity;
     }
 }
