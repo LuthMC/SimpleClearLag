@@ -3,7 +3,6 @@
 namespace Luthfi\SimpleClearLag;
 
 use pocketmine\plugin\PluginBase;
-use pocketmine\scheduler\TaskScheduler;
 use pocketmine\utils\Config;
 use Luthfi\SimpleClearLag\tasks\ClearLagTask;
 
@@ -17,7 +16,7 @@ class Main extends PluginBase {
         $this->config = $this->getConfig();
         $interval = $this->config->get("interval", 5) * 60;
 
-        $this->getScheduler()->scheduleRepeatingTask(new ClearLagTask($this, $interval), 20);
+        $this->getScheduler()->scheduleRepeatingTask(new ClearLagTask($this), $interval);
     }
 
     public function getClearMessage(): string {

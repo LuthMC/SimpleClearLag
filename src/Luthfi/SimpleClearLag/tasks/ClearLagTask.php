@@ -60,10 +60,10 @@ class ClearLagTask extends Task {
         if ($entity instanceof Player) {
             return true;
         }
-        
+
         $protectedEntityTags = ["HumanNPC", "Slapper"];
         foreach ($protectedEntityTags as $tag) {
-            if ($entity->namedtag->hasTag($tag)) {
+            if ($entity->getNamedTag()->hasTag($tag)) {
                 return true;
             }
         }
