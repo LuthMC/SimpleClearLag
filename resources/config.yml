@@ -1,0 +1,5 @@
+# SimpleClearLag Configuration 
+
+interval: 5 # 5 minutes
+clear_message: "Entities and items have been cleared!"
+warning_message: "Clearing entities and items in {time}"
