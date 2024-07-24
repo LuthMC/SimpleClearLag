@@ -17,7 +17,7 @@ class Main extends PluginBase {
         $this->config = $this->getConfig();
         $interval = $this->config->get("interval", 5) * 60;
 
-        $this->getScheduler()->scheduleRepeatingTask(new ClearLagTask($this), $interval);
+        $this->getScheduler()->scheduleRepeatingTask(new ClearLagTask($this, $interval), 20);
     }
 
     public function getClearMessage(): string {
