@@ -61,10 +61,12 @@ class ClearLagTask extends Task {
             return true;
         }
 
-        $protectedEntityTags = ["HumanNPC", "Slapper"];
-        foreach ($protectedEntityTags as $tag) {
-            if ($entity->getNamedTag()->hasTag($tag)) {
-                return true;
+        $protectedPlugins = ["HumanNPC", "Slapper"];
+        foreach ($protectedPlugins as $plugin) {
+            if ($this->plugin->getServer()->getPluginManager()->getPlugin($plugin) !== null) {
+                if ($entity->getName() === $plugin || $entity->getNetworkId() === $plugin) {
+                    return true;
+                }
             }
         }
 
